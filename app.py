@@ -236,8 +236,9 @@ def edit_profile():
             user.image_url = form.image_url.data
             user.header_image_url = form.header_image_url.data
             user.bio = form.bio.data or User.bio.default.arg
-            # user.location = get_location() if form.location.data else None
-            import pdb; pdb.set_trace()
+            user.location = form.location.data
+            user.show_location = form.show_location.data
+
             db.session.commit()
             return redirect(f'/users/{user.id}')
         else:

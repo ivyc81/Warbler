@@ -69,6 +69,11 @@ class User(db.Model):
         db.Text,
     )
 
+    show_location = db.Column(
+        db.Boolean,
+        default=False,
+    )
+
     password = db.Column(
         db.Text,
         nullable=False,
