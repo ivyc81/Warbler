@@ -35,6 +35,7 @@ class User(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True,
+        # autoincrement?
     )
 
     email = db.Column(
@@ -112,7 +113,7 @@ class User(db.Model):
             image_url=image_url,
         )
 
-        db.session.add(user)
+        db.session.add(user) #move this to app.py
         return user
 
     @classmethod
@@ -154,7 +155,7 @@ class Message(db.Model):
     timestamp = db.Column(
         db.DateTime,
         nullable=False,
-        default=datetime.utcnow(),
+        default=datetime.utcnow,
     )
 
     user_id = db.Column(
