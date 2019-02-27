@@ -249,18 +249,6 @@ def edit_profile():
         return render_template("/users/edit.html", form=form, user_id=g.user.id)
 
 
-def get_location():
-    ############## UNDER CONSTRUCTION ###########
-    ip_address = request.remote_add
-    api_url = http://api.ipstack.com/
-    f.close()
-    location = json.loads(json_string)
-    # print(location)
-    location_city = location['city']
-    location_country = location['country_name']
-
-    return (f"{location_city}, {location_country}")
-
 
 @app.route('/users/delete', methods=["POST"])
 def delete_user():
@@ -340,8 +328,15 @@ def homepage():
     """
 
     if g.user:
+        
+        follower_ids = [u.id for u in g.user.following]
+        
+        follower_ids.append(g.user.id)
+        
+        
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(follower_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
