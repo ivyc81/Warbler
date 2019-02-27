@@ -75,6 +75,8 @@ def signup():
                 email=form.email.data,
                 image_url=form.image_url.data or User.image_url.default.arg,
             )
+            user.bio = User.bio.default.arg
+            db.session.add(user)
             db.session.commit()
 
         except IntegrityError as e:

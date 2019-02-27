@@ -62,6 +62,7 @@ class User(db.Model):
 
     bio = db.Column(
         db.Text,
+        default="Nothing's written here yet."
     )
 
     location = db.Column(
@@ -113,7 +114,6 @@ class User(db.Model):
             image_url=image_url,
         )
 
-        db.session.add(user) #move this to app.py
         return user
 
     @classmethod
