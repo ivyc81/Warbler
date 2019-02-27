@@ -11,6 +11,7 @@ from models import db, connect_db, User, Message
 import json
 import urllib.request
 
+
 #Secrets
 from secret import LOCATION_KEY, CURR_USER_KEY
 
@@ -236,7 +237,7 @@ def edit_profile():
             user.header_image_url = form.header_image_url.data
             user.bio = form.bio.data or User.bio.default.arg
             # user.location = get_location() if form.location.data else None
-
+            import pdb; pdb.set_trace()
             db.session.commit()
             return redirect(f'/users/{user.id}')
         else:
@@ -248,8 +249,9 @@ def edit_profile():
 
 
 def get_location():
-    f = urllib.request.urlopen('http://freegeoip.net/json/')
-    json_string = f.read()
+    ############## UNDER CONSTRUCTION ###########
+    ip_address = request.remote_add
+    api_url = http://api.ipstack.com/
     f.close()
     location = json.loads(json_string)
     # print(location)
