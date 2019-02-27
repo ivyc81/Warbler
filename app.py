@@ -4,10 +4,15 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, EditProfileForm
 from models import db, connect_db, User, Message
 
-CURR_USER_KEY = "curr_user"
+# These two are for getting location
+import json
+import urllib.request
+
+#Secrets
+from secret import LOCATION_KEY, CURR_USER_KEY
 
 app = Flask(__name__)
 
@@ -212,10 +217,46 @@ def stop_following(follow_id):
 
 
 @app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+def edit_profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    form = EditProfileForm(obj=g.user)
+
+    if form.validate_on_submit():
+        user = User.authenticate(form.username.data,
+                                 form.password.data)
+        if user:
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data
+            user.header_image_url = form.header_image_url.data
+            user.bio = form.bio.data or User.bio.default.arg
+            # user.location = get_location() if form.location.data else None
+
+            db.session.commit()
+            return redirect(f'/users/{user.id}')
+        else:
+            flash("Wrong password. Access unauthorized.", "danger")
+            return redirect('/')
+
+    else:
+        return render_template("/users/edit.html", form=form, user_id=g.user.id)
+
+
+def get_location():
+    f = urllib.request.urlopen('http://freegeoip.net/json/')
+    json_string = f.read()
+    f.close()
+    location = json.loads(json_string)
+    # print(location)
+    location_city = location['city']
+    location_country = location['country_name']
+
+    return (f"{location_city}, {location_country}")
 
 
 @app.route('/users/delete', methods=["POST"])
