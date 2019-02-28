@@ -157,7 +157,7 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    return render_template('users/show.html', user=user, messages=messages, g_user=g.user)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -255,7 +255,7 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    g.user.query.delete()
+    User.query.filter(User.id == g.user.id).delete()
     # db.session.delete(g.user)
     db.session.commit()
 
@@ -337,11 +337,29 @@ def homepage():
                     .limit(100)
                     .all())
 
-
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages, user=g.user)
 
     else:
         return render_template('home-anon.html')
+
+##############################################################################
+# like-unlike messages
+
+@app.route('/', methods=["POST"])
+def like_a_message():
+    ''' like a message on the homepage '''
+    if g.user:
+
+        message_id = request.form['message_id']
+        found_message = Message.query.get(message_id)
+
+        if found_message in g.user.liked_messages:
+            g.user.liked_messages.remove(found_message)
+        else:
+            g.user.liked_messages.append(found_message)
+
+        db.session.commit()
+        return redirect('/')
 
 
 ##############################################################################
