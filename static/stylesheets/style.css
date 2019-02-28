@@ -205,6 +205,11 @@ nav + .container {
   overflow: hidden;
 }
 
+#header_img {
+  width: 100%;
+  vertical-align: bottom;
+}
+
 .full-width {
   width: 100vw;
   margin: 0 -50vw;

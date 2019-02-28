@@ -348,18 +348,58 @@ def homepage():
 @app.route('/', methods=["POST"])
 def like_a_message():
     ''' like a message on the homepage '''
-    if g.user:
 
-        message_id = request.form['message_id']
-        found_message = Message.query.get(message_id)
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
-        if found_message in g.user.liked_messages:
-            g.user.liked_messages.remove(found_message)
-        else:
-            g.user.liked_messages.append(found_message)
+    message_id = request.form['message_id']
+    found_message = Message.query.get(message_id)
 
-        db.session.commit()
-        return redirect('/')
+    if found_message in g.user.liked_messages:
+        g.user.liked_messages.remove(found_message)
+    else:
+        g.user.liked_messages.append(found_message)
+
+    db.session.commit()
+    return redirect('/')
+
+@app.route('/users/<int:user_id>/liked')
+def show_liked_messages(user_id):
+    """shows all liked messages"""
+
+    if not g.user or user_id != g.user.id:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    messages = g.user.liked_messages
+
+    return render_template("users/liked_messages.html", messages=messages, user=g.user)
+
+
+@app.route('/users/<int:user_id>/liked', methods=["POST"])
+def like_a_message_in_like(user_id):
+    ''' like a message on the homepage '''
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    message_id = request.form['message_id']
+    found_message = Message.query.get(message_id)
+
+    if found_message in g.user.liked_messages:
+        g.user.liked_messages.remove(found_message)
+    else:
+        g.user.liked_messages.append(found_message)
+
+    db.session.commit()
+    return redirect(f'/users/{user_id}/liked')
+
+
+
+
+
 
 
 ##############################################################################
