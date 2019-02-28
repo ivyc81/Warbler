@@ -16,10 +16,11 @@
             <a href="/users/{{ user.id }}">@{{ user.username }}</a>
             <span class="text-muted">{{ message.timestamp.strftime('%d %B %Y, %I:%M %p') }}</span>
             <p>{{ message.text }}</p>
-            {% if message.user != g_user %}
-              <form action="/" method="POST">
+            {% if message.user != current_user %}
+              <form action="/toggle_like_status" method="POST">
+                  <input type="hidden" name="return_url" value="{{ return_url }}">
                   <input type="hidden" name="message_id" value="{{ message.id }}">
-                {% if g_user in message.liked_by %}
+                {% if current_user in message.liked_by %}
                   <button class='message-button'><i class="fas fa-star"></i></button>
                 {% else %}
                   <button class='message-button'><i class="far fa-star"></i></button>

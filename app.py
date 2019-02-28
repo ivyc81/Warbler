@@ -157,7 +157,11 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages, g_user=g.user)
+    return render_template("users/show.html",
+                           messages=messages,
+                           current_user=g.user,
+                           user=user,
+                           return_url=f'/users/{user_id}')
 
 
 @app.route('/users/<int:user_id>/following')
@@ -225,7 +229,7 @@ def edit_profile():
     form = EditProfileForm(obj=g.user)
 
     if form.validate_on_submit():
-        user = User.authenticate(form.username.data,
+        user = User.authenticate(g.user.username,
                                  form.password.data)
         if user:
             user.username = form.username.data
@@ -337,7 +341,10 @@ def homepage():
                     .limit(100)
                     .all())
 
-        return render_template('home.html', messages=messages, user=g.user)
+        return render_template("home.html",
+                               messages=messages,
+                               current_user=g.user,
+                               return_url=f'/')
 
     else:
         return render_template('home-anon.html')
@@ -345,15 +352,17 @@ def homepage():
 ##############################################################################
 # like-unlike messages
 
-@app.route('/', methods=["POST"])
-def like_a_message():
-    ''' like a message on the homepage '''
+@app.route('/toggle_like_status', methods=["POST"])
+def toggle_likes():
+    ''' toggle like status of message, redirects back to page passed in from like button'''
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
     message_id = request.form['message_id']
+    return_url = request.form['return_url']
+
     found_message = Message.query.get(message_id)
 
     if found_message in g.user.liked_messages:
@@ -362,7 +371,8 @@ def like_a_message():
         g.user.liked_messages.append(found_message)
 
     db.session.commit()
-    return redirect('/')
+    
+    return redirect(return_url)
 
 @app.route('/users/<int:user_id>/liked')
 def show_liked_messages(user_id):
@@ -374,27 +384,30 @@ def show_liked_messages(user_id):
 
     messages = g.user.liked_messages
 
-    return render_template("users/liked_messages.html", messages=messages, user=g.user)
+    return render_template("users/liked_messages.html",
+                           messages=messages,
+                           user=g.user,
+                           return_url=f'/users/{user_id}/liked')
 
 
-@app.route('/users/<int:user_id>/liked', methods=["POST"])
-def like_a_message_in_like(user_id):
-    ''' like a message on the homepage '''
+# @app.route('/users/<int:user_id>/liked', methods=["POST"])
+# def like_a_message_in_like(user_id):
+#     ''' like a message on the homepage '''
 
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
+#     if not g.user:
+#         flash("Access unauthorized.", "danger")
+#         return redirect("/")
 
-    message_id = request.form['message_id']
-    found_message = Message.query.get(message_id)
+#     message_id = request.form['message_id']
+#     found_message = Message.query.get(message_id)
 
-    if found_message in g.user.liked_messages:
-        g.user.liked_messages.remove(found_message)
-    else:
-        g.user.liked_messages.append(found_message)
+#     if found_message in g.user.liked_messages:
+#         g.user.liked_messages.remove(found_message)
+#     else:
+#         g.user.liked_messages.append(found_message)
 
-    db.session.commit()
-    return redirect(f'/users/{user_id}/liked')
+#     db.session.commit()
+#     return redirect(f'/users/{user_id}/liked')
 
 
 
