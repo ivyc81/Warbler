@@ -3,13 +3,9 @@ import os
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-
+from sqlalchemy import or_
 from forms import UserAddForm, LoginForm, MessageForm, EditProfileForm
 from models import db, connect_db, User, Message
-
-# These two are for getting location
-import json
-import urllib.request
 
 
 #Secrets
@@ -45,6 +41,7 @@ def add_user_to_g():
         g.user = None
 
     print(g)
+
 
 def do_login(user):
     """Log in user."""
@@ -258,10 +255,11 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    do_logout()
-
-    db.session.delete(g.user)
+    g.user.query.delete()
+    # db.session.delete(g.user)
     db.session.commit()
+
+    do_logout()
 
     return redirect("/signup")
 
@@ -304,7 +302,8 @@ def messages_show(message_id):
 def messages_destroy(message_id):
     """Delete a message."""
 
-    if not g.user:
+    message = Message.query.get(message_id)
+    if not g.user or g.user.id != message.user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
@@ -328,18 +327,16 @@ def homepage():
     """
 
     if g.user:
-        
+
         follower_ids = [u.id for u in g.user.following]
-        
-        follower_ids.append(g.user.id)
-        
-        
+
         messages = (Message
                     .query
-                    .filter(Message.user_id.in_(follower_ids))
+                    .filter(or_(Message.user_id.in_(follower_ids), g.user.id == Message.user_id))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
+
 
         return render_template('home.html', messages=messages)
 

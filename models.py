@@ -35,7 +35,7 @@ class User(db.Model):
     id = db.Column(
         db.Integer,
         primary_key=True,
-        # autoincrement?
+        autoincrement=True,
     )
 
     email = db.Column(
@@ -73,6 +73,11 @@ class User(db.Model):
         db.Boolean,
         default=True,
     )
+
+    # time_zone = db.Column(
+    #     db.Text,
+    #     nullable=False,
+    # )
 
     password = db.Column(
         db.Text,
@@ -165,7 +170,7 @@ class Message(db.Model):
 
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey('users.id', ondelete='CASCADE'),
+        db.ForeignKey('users.id', ondelete="cascade"),
         nullable=False,
     )
 
