@@ -8,7 +8,7 @@
 import os
 from unittest import TestCase
 
-from models import db, connect_db, Message, User
+from models import db, connect_db, Message, User, Like
 
 # BEFORE we import our app, let's set an environmental variable
 # to use a different database for tests (we need to do this
@@ -74,51 +74,6 @@ class MessageViewTestCase(TestCase):
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
-
-    def test_see_follwer(self):
-        """Can see followers when logged in?"""
-
-        u = User(username="other_user",
-                 email="other_user@test.com",
-                 password="testuser",
-                 id=10000)
-
-        db.session.add(u)
-        db.session.commit()
-
-        with self.client as c:
-            with c.session_transaction() as sess:
-                sess[CURR_USER_KEY] = self.testuser.id
-
-        resp = c.get("/users/10000/following")
-        resp_follower = c.get("/users/10000/followers")
-
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp_follower.status_code, 200)
-
-    def test_cant_see_follower(self):
-        """Can't see followers when logged out?"""
-
-        u = User(username="other_user",
-                 email="other_user@test.com",
-                 password="testuser",
-                 id=10000)
-
-        db.session.add(u)
-        db.session.commit()
-
-        resp_following = self.client.get("/users/10000/following")
-        resp_following_redirected = self.client.get("/users/10000/following",
-                                                    follow_redirects=True)
-        resp_follower = self.client.get("/users/10000/followers")
-        resp_follower_redirected = self.client.get("/users/10000/followers",
-                                                   follow_redirects=True)
-
-        self.assertEqual(resp_following.status_code, 302)
-        self.assertIn(b"Access unauthorized.", resp_following_redirected.data)
-
-        self.assertEqual(resp_follower.status_code, 302)
-        self.assertIn(b"Access unauthorized.", resp_follower_redirected.data)
 
     def test_unauthorized_new_message_when_logged_out(self):
         """trying to create new message when logged out should redirect to homepage"""
@@ -211,8 +166,7 @@ class MessageViewTestCase(TestCase):
         deleted_message = Message.query.get(message.id)
         self.assertIsNone(deleted_message)
 
-    def text_unauthorized_add_when_logged_in(self):
-        """trying to add new message as another user when logged in"""
+    
 
 
 
