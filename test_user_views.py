@@ -123,13 +123,26 @@ class UserViewTestCase(TestCase):
     def test_homepage_shows_messages_from_followed_people(self):
         '''only messages from people we follow should show'''
 
-        followed_u = User(username='followed', password='password', email='followed@test.com', id=999)
-        not_followed_u = User(username='not_followed', password='password', email='not_followed@test.com', id=888)
+        followed_u = User(username='followed',
+                          password='password',
+                          email='followed@test.com',
+                          id=999)
 
-        followed_message = Message(text='Followed (message)', user_id=999)
-        not_followed_message = Message(text='Not followed (message)', user_id=888)
+        not_followed_u = User(username='not_followed',
+                              password='password',
+                              email='not_followed@test.com',
+                              id=888)
 
-        db.session.add_all([followed_u, not_followed_u, followed_message, not_followed_message])
+        followed_message = Message(text='Followed (message)',
+                                   user_id=999)
+
+        not_followed_message = Message(text='Not followed (message)',
+                                       user_id=888)
+
+        db.session.add_all([followed_u,
+                            not_followed_u,
+                            followed_message,
+                            not_followed_message])
 
         current_user = User.query.filter(User.username == "testuser").first()
 
@@ -146,5 +159,37 @@ class UserViewTestCase(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn(b'Followed (message)', resp.data)
         self.assertNotIn(b'Not followed (message)', resp.data)
+
+    def test_user_profile_when_logged_out(self):
+        '''should show user profile page wihtout edit and delete profile'''
+
+        user = User.query.filter(User.username == "testuser").first()
+        user.id = 10000
+        db.session.commit()
+
+        resp = self.client.get('/users/10000')
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'<p class="small">Likes</p>', resp.data)
+        self.assertNotIn(b'Edit Profile</a>', resp.data)
+        self.assertNotIn(b'Delete Profile</button>', resp.data)
+
+    def test_user_profile_when_logged_in(self):
+        '''should show user profile page with edit and delete profile'''
+
+        user = User.query.filter(User.username == "testuser").first()
+        user.id = 10000
+        db.session.commit()
+
+        self.client.post("/login",
+                         data={"username": "testuser",
+                               "password": "testuser"})
+
+        resp = self.client.get('/users/10000')
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn(b'<p class="small">Likes</p>', resp.data)
+        self.assertIn(b'Edit Profile</a>', resp.data)
+        self.assertIn(b'Delete Profile</button>', resp.data)
 
 

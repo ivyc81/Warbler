@@ -40,8 +40,6 @@ class UserModelTestCase(TestCase):
         Message.query.delete()
         FollowersFollowee.query.delete()
 
-        self.client = app.test_client()
-
     def test_user_model(self):
         """Does basic model work?"""
 
@@ -200,7 +198,7 @@ class UserModelTestCase(TestCase):
                password="HASHED_PASSWORD",
                id=30000
                )
-
+        # fail on replication of unique fields
         user4 = User(
                username="testuser3",
                email="test3@test.com",
