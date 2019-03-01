@@ -20,7 +20,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
@@ -307,6 +307,8 @@ def messages_destroy(message_id):
     """Delete a message."""
 
     message = Message.query.get(message_id)
+
+    print(message)
     if not g.user or g.user.id != message.user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")
@@ -371,7 +373,7 @@ def toggle_likes():
         g.user.liked_messages.append(found_message)
 
     db.session.commit()
-    
+
     return redirect(return_url)
 
 @app.route('/users/<int:user_id>/liked')

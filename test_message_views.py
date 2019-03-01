@@ -49,6 +49,7 @@ class MessageViewTestCase(TestCase):
                                     password="testuser",
                                     image_url=None)
 
+        db.session.add(self.testuser)
         db.session.commit()
 
     def test_add_message(self):
@@ -61,13 +62,128 @@ class MessageViewTestCase(TestCase):
             with c.session_transaction() as sess:
                 sess[CURR_USER_KEY] = self.testuser.id
 
+
             # Now, that session setting is saved, so we can have
             # the rest of ours test
 
             resp = c.post("/messages/new", data={"text": "Hello"})
+            # import pdb; pdb.set_trace()
 
             # Make sure it redirects
             self.assertEqual(resp.status_code, 302)
 
             msg = Message.query.one()
             self.assertEqual(msg.text, "Hello")
+
+    def test_see_follwer(self):
+        """Can see followers when logged in?"""
+
+        u = User(username="other_user",
+                 email="other_user@test.com",
+                 password="testuser",
+                 id=10000)
+
+        db.session.add(u)
+        db.session.commit()
+
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.testuser.id
+
+        resp = c.get("/users/10000/following")
+        resp_follower = c.get("/users/10000/followers")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp_follower.status_code, 200)
+
+    def test_cant_see_follower(self):
+        """Can't see followers when logged out?"""
+
+        u = User(username="other_user",
+                 email="other_user@test.com",
+                 password="testuser",
+                 id=10000)
+
+        db.session.add(u)
+        db.session.commit()
+
+        resp_following = self.client.get("/users/10000/following")
+        resp_following_redirected = self.client.get("/users/10000/following",
+                                                    follow_redirects=True)
+        resp_follower = self.client.get("/users/10000/followers")
+        resp_follower_redirected = self.client.get("/users/10000/followers",
+                                                   follow_redirects=True)
+
+        self.assertEqual(resp_following.status_code, 302)
+        self.assertIn(b"Access unauthorized.", resp_following_redirected.data)
+
+        self.assertEqual(resp_follower.status_code, 302)
+        self.assertIn(b"Access unauthorized.", resp_follower_redirected.data)
+
+    def test_unauthorized_new_message_when_logged_out(self):
+        """trying to create new message when logged out should redirect to homepage"""
+
+        resp_post = self.client.post("/messages/new", data={"text": "Hello"})
+        resp_post_redirected = self.client.post("/messages/new",
+                                                data={"text": "Hello"},
+                                                follow_redirects=True)
+        resp_get = self.client.post("/messages/new")
+        resp_get_redirected = self.client.post("/messages/new",
+                                               follow_redirects=True)
+
+        self.assertEqual(resp_post.status_code, 302)
+        self.assertIn(b"Access unauthorized.", resp_post_redirected.data)
+
+        self.assertEqual(resp_get.status_code, 302)
+        self.assertIn(b"Access unauthorized.", resp_get_redirected.data)
+
+    def test_unauthorized_delete_when_logged_out(self):
+        """trying to delete message when logged out should redirect to homepage"""
+
+        u = User(username="other_user",
+                 email="other_user@test.com",
+                 password="testuser",
+                 id=10000)
+
+        message = Message(text="text",
+                          user_id=10000,
+                          id=10000)
+
+        db.session.add(u, message)
+        db.session.commit()
+
+        resp_delete = self.client.post("/messages/10000/delete")
+        resp_delete_redirected = self.client.post("/messages/10000/delete",
+                                                  follow_redirects=True)
+
+        self.assertEqual(resp_delete.status_code, 302)
+        self.assertIn(b"Access unauthorized.", resp_delete_redirected.data)
+
+    def test_unauthorized_delete_when_not_author(self):
+        """trying to delete message when not author should redirect to homepage"""
+
+        # with self.client as c:
+        #     with c.session_transaction() as sess:
+        #         sess[CURR_USER_KEY] = self.testuser.id
+
+        logged_in_user = self.client.post("/login", data={"username":"testuser", "password":"testuser"})
+
+        u = User(username="other_user",
+                email="other_user@test.com",
+                password="testuser",
+                id=10000)
+
+        message = Message(text="text",
+                        user_id=10000,
+                        id=10000)
+
+        db.session.add(u, message)
+        db.session.commit()
+
+        resp_delete = self.client.post("/messages/10000/delete")
+        resp_delete_redirected = self.client.post("/messages/10000/delete",
+                                                follow_redirects=True)
+
+        self.assertEqual(resp_delete.status_code, 302)
+        self.assertIn(b"Access unauthorized.", resp_delete_redirected.data)
+
