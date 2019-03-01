@@ -149,7 +149,8 @@ class MessageViewTestCase(TestCase):
                           user_id=10000,
                           id=10000)
 
-        db.session.add(u, message)
+        db.session.add(u)
+        db.session.add(message)
         db.session.commit()
 
         resp_delete = self.client.post("/messages/10000/delete")
@@ -177,7 +178,8 @@ class MessageViewTestCase(TestCase):
                         user_id=10000,
                         id=10000)
 
-        db.session.add(u, message)
+        db.session.add(u)
+        db.session.add(message)
         db.session.commit()
 
         resp_delete = self.client.post("/messages/10000/delete")
@@ -186,4 +188,32 @@ class MessageViewTestCase(TestCase):
 
         self.assertEqual(resp_delete.status_code, 302)
         self.assertIn(b"Access unauthorized.", resp_delete_redirected.data)
+
+    def test_authorized_delete(self):
+        """trying to delete message when authorized"""
+
+        user = User.query.filter(User.username == "testuser").first()
+
+        message = Message(text="text",
+                          user_id=user.id,
+                          id=10000)
+
+        self.client.post("/login", data={"username": "testuser",
+                                         "password": "testuser"})
+
+        db.session.add(message)
+        db.session.commit()
+
+        resp_delete = self.client.post("/messages/10000/delete")
+
+        self.assertEqual(resp_delete.status_code, 302)
+
+        deleted_message = Message.query.get(message.id)
+        self.assertIsNone(deleted_message)
+
+    def text_unauthorized_add_when_logged_in(self):
+        """trying to add new message as another user when logged in"""
+
+
+
 

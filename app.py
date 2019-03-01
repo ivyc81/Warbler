@@ -40,7 +40,7 @@ def add_user_to_g():
     else:
         g.user = None
 
-    print(g)
+    # print(g)
 
 
 def do_login(user):
@@ -308,7 +308,6 @@ def messages_destroy(message_id):
 
     message = Message.query.get(message_id)
 
-    print(message)
     if not g.user or g.user.id != message.user_id:
         flash("Access unauthorized.", "danger")
         return redirect("/")

@@ -134,8 +134,8 @@ class MessageModelTestCase(TestCase):
             id=10001
         )
 
-        db.session.add(u, u1)
-        # db.session.add(u1)
+        db.session.add(u)
+        db.session.add(u1)
 
         message = Message(
             text="test",
