@@ -11,6 +11,7 @@ Flask-Bcrypt==0.7.1
 Flask-DebugToolbar==0.10.1
 Flask-SQLAlchemy==2.3.2
 Flask-WTF==0.14.2
+gunicorn==19.9.0
 ipython==7.0.1
 ipython-genutils==0.2.0
 itsdangerous==0.24
@@ -26,6 +27,7 @@ ptyprocess==0.6.0
 pycparser==2.19
 Pygments==2.2.0
 python-dateutil==2.7.3
+pytz==2018.9
 simplegeneric==0.8.1
 six==1.11.0
 SQLAlchemy==1.2.12
