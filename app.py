@@ -11,7 +11,7 @@ from pytz import timezone
 
 
 #Secrets
-from secret import LOCATION_KEY, CURR_USER_KEY
+# from secret import LOCATION_KEY, CURR_USER_KEY
 
 app = Flask(__name__)
 
@@ -27,6 +27,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', "it's a secret")
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
+CURR_USER_KEY = 'curr_user'
 
 
 ##############################################################################
