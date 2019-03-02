@@ -6,6 +6,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 from forms import UserAddForm, LoginForm, MessageForm, EditProfileForm
 from models import db, connect_db, User, Message
+import pytz
+from pytz import timezone
 
 
 #Secrets
@@ -157,8 +159,20 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
+
+    list_of_time_msg_tuples = []
+
+    for message in messages:
+
+        if g.user:
+            new_time = message.timestamp.astimezone(timezone(g.user.time_zone))
+        else:
+            new_time = message.timestamp
+
+        list_of_time_msg_tuples.append((message, new_time))
+
     return render_template("users/show.html",
-                           messages=messages,
+                           messages=list_of_time_msg_tuples,
                            current_user=g.user,
                            user=user,
                            return_url=f'/users/{user_id}')
@@ -239,6 +253,7 @@ def edit_profile():
             user.bio = form.bio.data or User.bio.default.arg
             user.location = form.location.data
             user.show_location = form.show_location.data
+            user.time_zone = form.time_zone.data
 
             db.session.commit()
             return redirect(f'/users/{user.id}')
@@ -312,8 +327,7 @@ def messages_destroy(message_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    msg = Message.query.get(message_id)
-    db.session.delete(msg)
+    db.session.delete(message)
     db.session.commit()
 
     return redirect(f"/users/{g.user.id}")
@@ -342,8 +356,14 @@ def homepage():
                     .limit(100)
                     .all())
 
+        list_of_time_msg_tuples = []
+
+        for message in messages:
+            new_time = message.timestamp.astimezone(timezone(g.user.time_zone))
+            list_of_time_msg_tuples.append((message, new_time))
+
         return render_template("home.html",
-                               messages=messages,
+                               messages=list_of_time_msg_tuples,
                                current_user=g.user,
                                return_url=f'/')
 
@@ -385,8 +405,14 @@ def show_liked_messages(user_id):
 
     messages = g.user.liked_messages
 
+    list_of_time_msg_tuples = []
+
+    for message in messages:
+        new_time = message.timestamp.astimezone(timezone(g.user.time_zone))
+        list_of_time_msg_tuples.append((message, new_time))
+
     return render_template("users/liked_messages.html",
-                           messages=messages,
+                           messages=list_of_time_msg_tuples,
                            user=g.user,
                            return_url=f'/users/{user_id}/liked')
 

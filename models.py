@@ -74,10 +74,11 @@ class User(db.Model):
         default=True,
     )
 
-    # time_zone = db.Column(
-    #     db.Text,
-    #     nullable=False,
-    # )
+    time_zone = db.Column(
+        db.Text,
+        nullable=False,
+        default="GMT-0",
+    )
 
     password = db.Column(
         db.Text,
@@ -115,7 +116,7 @@ class User(db.Model):
     def likes_msg(self, msg):
         """"""
         # FIXME: we should ...
-        # TODO: 
+        # TODO:
         return self in msg.liked_by
 
 
