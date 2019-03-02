@@ -166,7 +166,8 @@ def users_show(user_id):
     for message in messages:
 
         if g.user:
-            new_time = message.timestamp.astimezone(timezone(g.user.time_zone))
+            aware_time = message.timestamp.replace(tzinfo=pytz.UTC)
+            new_time = aware_time.astimezone(timezone(g.user.time_zone))
         else:
             new_time = message.timestamp
 
@@ -360,7 +361,8 @@ def homepage():
         list_of_time_msg_tuples = []
 
         for message in messages:
-            new_time = message.timestamp.astimezone(timezone(g.user.time_zone))
+            aware_time = message.timestamp.replace(tzinfo=pytz.UTC)
+            new_time = aware_time.astimezone(timezone(g.user.time_zone))
             list_of_time_msg_tuples.append((message, new_time))
 
         return render_template("home.html",
@@ -409,7 +411,8 @@ def show_liked_messages(user_id):
     list_of_time_msg_tuples = []
 
     for message in messages:
-        new_time = message.timestamp.astimezone(timezone(g.user.time_zone))
+        aware_time = message.timestamp.replace(tzinfo=pytz.UTC)
+        new_time = aware_time.astimezone(timezone(g.user.time_zone))
         list_of_time_msg_tuples.append((message, new_time))
 
     return render_template("users/liked_messages.html",
