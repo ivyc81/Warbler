@@ -167,7 +167,10 @@ def users_show(user_id):
 
         if g.user:
             aware_time = message.timestamp.replace(tzinfo=pytz.UTC)
+            print(f'########Before{aware_time}############')
             new_time = aware_time.astimezone(timezone(g.user.time_zone))
+            print(f'########Converted{aware_time}############')
+            print(f'########Converted{new_time}############')
         else:
             new_time = message.timestamp
 
