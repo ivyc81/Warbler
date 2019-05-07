@@ -3,6 +3,7 @@ A Twitter Clone <br/>
 See it: https://warbler-less.herokuapp.com/
 
 ## Technologies
+* Python 3.7
 * Flask 1.0.2
 * Flask-Bcrypt 0.7.1
 * Flask-DebugToolbar 0.10.1
